@@ -26,7 +26,7 @@ class Cell:
         self.outline = outline
 
 
-    def step(self, env):
+    def step(self, env, draw):
         neigh_coords = get_neighbours(self.x, self.y, self.r)
         neighbours = [env.cells.get(n) for n in neigh_coords if env.cells.get(n)]
         p = len([n for n in neighbours if n.alive == True])/len(neighbours)
@@ -34,6 +34,7 @@ class Cell:
         life = random.uniform(0,1) < p
         if life:
             c.make_alive()
+            draw(c)
         return c
 
 
@@ -51,6 +52,7 @@ class EnvCanvas(Canvas):
     def view_cell(self, cell, width=2):
         self.create_polygon(cell.points, fill=cell.fill, outline=cell.outline, width=width, tag = str(cell.x)+'-'+str(cell.y))
         # self.tag_bind(str(cell.x) + '-' + str(cell.y), '<Button-1>', cell.make_alive)
+        self.update()
 
 
     def view_environment(self, env):
@@ -73,10 +75,10 @@ class Environment:
             y += r * 3/2
 
 
-    def generation(self):
+    def generation(self, draw):
         new_cells = {}
         for coords, cell in self.cells.items():
-            new_cell = cell.step(self)
+            new_cell = cell.step(self, draw)
             new_cells[coords] = new_cell
         self.cells = new_cells
 
@@ -106,11 +108,12 @@ class Window:
 
     def generation(self):
         print(self.num_generation)
-        self.env.generation()
+        self.env.generation(self.canvas.view_cell)
 
-        self.canvas.view_environment(self.env)
+        # self.canvas.view_environment(self.env)
         time.sleep(1)
         self.num_generation += 1
+        # self.canvas.update()
 
 
     def run(self, event = None):
