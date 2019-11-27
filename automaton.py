@@ -3,6 +3,7 @@ from functools import partial
 import copy
 import random
 import time
+from cells import *
 
 
 def get_points(x, y, r):
@@ -13,35 +14,6 @@ def get_neighbours(x, y, r):
     w = r * 3 ** (1 / 2)
     neighbours = [(x + w/2, y - r*3/2), (x + w, y), (x + w/2, y + r*3/2), (x - w/2, y + r*3/2), (x - w, y), (x - w/2, y - r*3/2)]
     return [(round(n[0],2), round(n[1], 2)) for n in neighbours if n[0] > 1 and n[1] > 1]
-
-
-class Cell:
-    def __init__(self,x,y,r, alive = False, fill='#6fd19b', outline='#1c5234'):
-        self.x = x
-        self.y = y
-        self.r = r
-        self.points = get_points(x, y, r)
-        self.alive = alive
-        self.fill = fill
-        self.outline = outline
-
-
-    def step(self, env, draw):
-        neigh_coords = get_neighbours(self.x, self.y, self.r)
-        neighbours = [env.cells.get(n) for n in neigh_coords if env.cells.get(n)]
-        p = len([n for n in neighbours if n.alive == True])/len(neighbours)
-        c = copy.deepcopy(self)
-        life = random.uniform(0,1) < p
-        if life:
-            c.make_alive()
-            draw(c)
-        return c
-
-
-    def make_alive(self, event = None):
-        self.alive = True
-        self.fill = 'red'
-        self.outline = 'black'
 
 
 class EnvCanvas(Canvas):
@@ -69,7 +41,7 @@ class Environment:
             c = columns if i % 2 == 0 else columns - 1
             for j in range(c):
                 x, y = round(x,2), round(y,2)
-                self.cells[(x,y)] = Cell(x,y,r)
+                self.cells[(x,y)] = EmptyCell(x,y,r)
                 x += self.w
             x = self.w if i % 2 == 0 else self.w / 2
             y += r * 3/2
@@ -86,9 +58,8 @@ class Environment:
 class Window:
     def __init__(self):
         self.root = Tk()
-        self.steps_per_run = 5
-        self.start_button = Button(self.root, text='⊲', command=self.run)
-        self.start_button.grid(row=0, column=0)
+        self.steps_per_run = 1
+        self.make_buttons()
         self.num_generation = 0
         rows, columns, r = 10, 20, 30
         self.create(rows, columns, r)
@@ -96,6 +67,25 @@ class Window:
         for cell in self.env.cells.keys():
             self.canvas.tag_bind(str(cell[0])+'-'+str(cell[1]), '<Button-1>', partial(self.make_alive, cell[0], cell[1]))
         mainloop()
+
+
+    def make_buttons(self):
+        self.cell_type_to_born = CellA
+        self.start_button = Button(self.root, text='⊲', command=self.run)
+        self.start_button.grid(row=0, column=0)
+        self.cellA_button = Canvas(self.root, width=20, height=20, bg='#eb7834')
+        self.cellA_button.grid(row = 0, column = 5)
+        self.cellA_button.bind('<Button-1>', lambda event: self.assign(CellA))
+        self.cellB_button = Canvas(self.root, width=20, height=20, bg='#366feb')
+        self.cellB_button.grid(row=0, column=6)
+        self.cellB_button.bind('<Button-1>', lambda event: self.assign(CellB))
+        self.cellD_button = Canvas(self.root, width=20, height=20, bg='#4d1b87')
+        self.cellD_button.grid(row=0, column=7)
+        self.cellD_button.bind('<Button-1>', lambda event: self.assign(CellD))
+
+
+    def assign(self, cell_type):
+        self.cell_type_to_born = cell_type
 
 
     def create(self, rows, columns, r):
@@ -125,8 +115,10 @@ class Window:
 
     def make_alive(self, x, y, event):
             print('alive', x, y)
-            cell = self.env.cells[(x,y)]
-            cell.make_alive()
+            # print(self.cell_type_to_born)
+            cell = self.cell_type_to_born(x, y, 30)
+            self.env.cells[(x, y)] = cell
+            # cell.make_alive()
             self.canvas.view_cell(cell)
 
 
