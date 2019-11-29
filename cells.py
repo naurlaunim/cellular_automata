@@ -1,6 +1,4 @@
-import copy
 import random
-import time
 
 
 def get_points(x, y, r):
@@ -14,12 +12,12 @@ def get_neighbours(x, y, r):
 
 
 class Cell:
-    def __init__(self,x,y,r, alive = False):
+    def __init__(self,x,y,r):
         self.x = x
         self.y = y
         self.r = r
         self.points = get_points(x, y, r)
-        self.alive = alive
+        self.neigh_coords = get_neighbours(self.x, self.y, self.r)
 
 
     def step(self, env, draw):
@@ -27,8 +25,7 @@ class Cell:
 
 
     def get_neighbour_cells(self, env):
-        neigh_coords = get_neighbours(self.x, self.y, self.r)
-        neighbours = [env.cells.get(n) for n in neigh_coords if env.cells.get(n)]
+        neighbours = [env.cells.get(n) for n in self.neigh_coords if env.cells.get(n)]
         return neighbours
 
 
@@ -48,40 +45,18 @@ class EmptyCell(Cell):
         neigh_cells = self.get_neighbour_cells(env)
 
         d_neighs = [cell for cell in neigh_cells if type(cell) == CellD]
-        if len(d_neighs) in [1, 2]:
-            bornD = random.uniform(0, 1) < 1/3
-            if bornD:
-                return CellD(self.x, self.y, self.r).viewed(draw)
+        if CellD.born(d_neighs):
+            return CellD(self.x, self.y, self.r).viewed(draw)
 
         a_neighs = [cell for cell in neigh_cells if type(cell) == CellA]
-        if len(a_neighs) >=3:
-            p = 1
-        elif len(a_neighs) == 2:
-            p = 0.75
-        elif len(a_neighs) == 1:
-            p = 0.5
-        else:
-            p = 0
-        bornA = random.uniform(0, 1) < p
-        if bornA:
+        if CellA.born(a_neighs):
             return CellA(self.x, self.y, self.r).viewed(draw)
 
         b_neighs = [cell for cell in neigh_cells if type(cell) == CellB]
-        if len(b_neighs) >= 4:
-            p = 0.9
-        elif len(b_neighs) == 3:
-            p = 0.7
-        elif len(b_neighs) == 2:
-            p = 0.5
-        elif len(b_neighs) == 1:
-            p = 0.3
-        else:
-            p = 0
-        bornB = random.uniform(0, 1) < p
-        if bornB:
+        if CellB.born(b_neighs):
             return CellB(self.x, self.y, self.r).viewed(draw)
 
-        return copy.deepcopy(self)
+        return self
 
 
 class CellA(Cell):
@@ -107,7 +82,19 @@ class CellA(Cell):
         if len(b_neighs) >= 2:
             return EmptyCell(self.x, self.y, self.r).viewed(draw)
 
-        return copy.deepcopy(self)
+        return self
+
+
+    def born(relatives):
+        if len(relatives) >=3:
+            p = 1
+        elif len(relatives) == 2:
+            p = 0.75
+        elif len(relatives) == 1:
+            p = 0.5
+        else:
+            p = 0
+        return random.uniform(0, 1) < p
 
 
 class CellB(Cell):
@@ -133,7 +120,21 @@ class CellB(Cell):
         if len(a_neighs) >= 4:
             return EmptyCell(self.x, self.y, self.r).viewed(draw)
 
-        return copy.deepcopy(self)
+        return self
+
+
+    def born(relatives):
+        if len(relatives) >= 5:
+            p = 0.9
+        elif len(relatives) == 4:
+            p = 0.7
+        elif len(relatives) == 3:
+            p = 0.5
+        elif len(relatives) >= 2:
+            p = 0.3
+        else:
+            p = 0
+        return random.uniform(0, 1) < p
 
 
 class CellD(Cell):
@@ -152,4 +153,11 @@ class CellD(Cell):
         if len(relatives) >= 3:
             return EmptyCell(self.x, self.y, self.r).viewed(draw)
         else:
-            return copy.deepcopy(self)
+            return self
+
+
+    def born(relatives):
+        if len(relatives) in [1, 2]:
+            return random.uniform(0, 1) < 1/3
+        else:
+            return False
