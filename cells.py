@@ -38,7 +38,7 @@ class EmptyCell(Cell):
     def __init__(self, *args):
         Cell.__init__(self, *args)
         self.fill = '#6fd19b'
-        self.outline = '#1c5234'
+        self.outline = '#549e75'
 
 
     def step(self, env, draw):
@@ -111,7 +111,7 @@ class CellB(Cell):
         neigh_cells = self.get_neighbour_cells(env)
         d_neighs = [cell for cell in neigh_cells if type(cell) == CellD]
         if len(d_neighs) >= 3:
-            return EmptyCell(self.x, self.y, self.r)
+            return EmptyCell(self.x, self.y, self.r).viewed(draw)
         if len(d_neighs) == 2:
             if random.uniform(0, 1) < 0.5:
                 return EmptyCell(self.x, self.y, self.r).viewed(draw)
