@@ -20,7 +20,7 @@ class Cell:
         self.neigh_coords = get_neighbours(self.x, self.y, self.r)
 
 
-    def step(self, env, draw):
+    def step(self, env):
         pass
 
 
@@ -29,32 +29,27 @@ class Cell:
         return neighbours
 
 
-    def viewed(self, draw):
-        draw(self)
-        return self
-
-
 class EmptyCell(Cell):
     def __init__(self, *args):
         Cell.__init__(self, *args)
         self.fill = '#6fd19b'
-        self.outline = '#549e75'
+        self.outline = '#427a5b'
 
 
-    def step(self, env, draw):
+    def step(self, env):
         neigh_cells = self.get_neighbour_cells(env)
 
         d_neighs = [cell for cell in neigh_cells if type(cell) == CellD]
         if CellD.born(d_neighs):
-            return CellD(self.x, self.y, self.r).viewed(draw)
+            return CellD(self.x, self.y, self.r)
 
         a_neighs = [cell for cell in neigh_cells if type(cell) == CellA]
         if CellA.born(a_neighs):
-            return CellA(self.x, self.y, self.r).viewed(draw)
+            return CellA(self.x, self.y, self.r)
 
         b_neighs = [cell for cell in neigh_cells if type(cell) == CellB]
         if CellB.born(b_neighs):
-            return CellB(self.x, self.y, self.r).viewed(draw)
+            return CellB(self.x, self.y, self.r)
 
         return self
 
@@ -69,18 +64,18 @@ class CellA(Cell):
         self.outline = '#80411b'
 
 
-    def step(self, env, draw):
+    def step(self, env):
         neigh_cells = self.get_neighbour_cells(env)
         d_neighs = [cell for cell in neigh_cells if type(cell) == CellD]
         if len(d_neighs) >= 2:
-            return EmptyCell(self.x, self.y, self.r).viewed(draw)
+            return EmptyCell(self.x, self.y, self.r)
         if len(d_neighs) == 1:
             if random.uniform(0, 1) < 0.5:
-                return EmptyCell(self.x, self.y, self.r).viewed(draw)
+                return EmptyCell(self.x, self.y, self.r)
 
         b_neighs = [cell for cell in neigh_cells if type(cell) == CellB]
         if len(b_neighs) >= 2:
-            return EmptyCell(self.x, self.y, self.r).viewed(draw)
+            return EmptyCell(self.x, self.y, self.r)
 
         return self
 
@@ -107,18 +102,18 @@ class CellB(Cell):
         self.outline = '#123175'
 
 
-    def step(self, env, draw):
+    def step(self, env):
         neigh_cells = self.get_neighbour_cells(env)
         d_neighs = [cell for cell in neigh_cells if type(cell) == CellD]
         if len(d_neighs) >= 3:
-            return EmptyCell(self.x, self.y, self.r).viewed(draw)
+            return EmptyCell(self.x, self.y, self.r)
         if len(d_neighs) == 2:
             if random.uniform(0, 1) < 0.5:
-                return EmptyCell(self.x, self.y, self.r).viewed(draw)
+                return EmptyCell(self.x, self.y, self.r)
 
         a_neighs = [cell for cell in neigh_cells if type(cell) == CellA]
         if len(a_neighs) >= 4:
-            return EmptyCell(self.x, self.y, self.r).viewed(draw)
+            return EmptyCell(self.x, self.y, self.r)
 
         return self
 
@@ -147,11 +142,11 @@ class CellD(Cell):
         self.outline = '#321159'
 
 
-    def step(self, env, draw):
+    def step(self, env):
         neigh_cells = self.get_neighbour_cells(env)
         relatives = [cell for cell in neigh_cells if type(cell) == CellD]
         if len(relatives) >= 3:
-            return EmptyCell(self.x, self.y, self.r).viewed(draw)
+            return EmptyCell(self.x, self.y, self.r)
         else:
             return self
 

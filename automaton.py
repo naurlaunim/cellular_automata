@@ -37,8 +37,10 @@ class Environment:
     def generation(self, draw):
         new_cells = {}
         for coords, cell in self.cells.items():
-            new_cell = cell.step(self, draw)
+            new_cell = cell.step(self)
             new_cells[coords] = new_cell
+            if type(cell) != type(new_cell):
+                draw(new_cell)
         self.cells = new_cells
 
 
